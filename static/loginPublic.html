@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="./jq.js"></script>
+    <script src="./login.js"></script>
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        #wx-reg{
+            margin: 0 auto;
+            height: 335px;
+            overflow: hidden;
+        }
+        .box{
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* background: url("http://58.20.51.209:9802/bingimages17646a8e5b9d348b1f1265720849025b"); */
+        }
+        .text{
+            color: white;
+            font-size: 24px;
+            width: 300px;
+            text-align: center;
+            /* position: relative;
+            top: 0px;
+            left: 0; */
+            /* background: white; */
+        }
+        .code{
+            position: relative;
+        }
+        #wx-reg iframe{
+            position: relative;
+            top: -40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="code">
+            <p class="text">车生活运营平台扫码登录</p>
+            <div id="wx-reg">
+            </div>
+        </div>
+        
+    </div>
+</body>
+
+<script>
+    window.onload=function(){
+        let imgUrl = '' ;
+        function fn(){
+            window.WwLGdpops({
+                "id" : "wx-reg",
+                "other" : '',
+                "state" : "10005"
+            });
+        }
+        fn();
+
+        function getBack(){
+            $.ajax({
+                url:'https://boot.csgxcf.com/gxdpops/innerservice',
+                type:'post',
+                data:{
+                        "queryType" : "bingimage",
+                        "internet" : "yes"
+                    },
+                success:(res)=>{
+                    var image = JSON.parse(res)
+                    console.log(image)
+                    imgUrl = image.urlroot + image.images[0].url
+                    $('.box').css('background',`url(${imgUrl})`)
+                }
+            })
+        }
+        getBack();
+    }
+</script>
+
+</html>

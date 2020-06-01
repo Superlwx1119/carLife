@@ -1,0 +1,2 @@
+webpackJsonp([21],{"8ZiG":function(e,n,t){"use strict";Object.defineProperty(n,"__esModule",{value:!0});var r={render:function(){var e=this.$createElement;return(this._self._c||e)("router-view")},staticRenderFns:[]};var u=t("VU/8")({name:"couponAudit"},r,!1,function(e){t("Xbx+")},null,null);n.default=u.exports},"Xbx+":function(e,n){}});
+//# sourceMappingURL=21.88934d4489523e12acfb.js.map

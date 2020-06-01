@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>车主分析</title>
+    <script src="./dataJs/jq.js"></script>
+    <script src="./dataJs/echarts.min.js"></script>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+        }
+        html{
+            font-size: 625%;
+        }
+        .echarts{
+            width: 100%;
+            height: 3rem;
+            
+        }
+        .box{
+            position: relative;
+        }
+        .picker,.select{
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: .12rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="box">
+            <div id="loginNum" class="echarts"></div>
+            <form class="picker">
+                <label><input  checked name="time" type="radio" value="7" />7天 </label> 
+                <label><input name="time" type="radio" value="30" />30天 </label> 
+            </form>
+        </div>
+        <div id="businessDue" class="echarts"></div>
+        <div class="box">
+            <div id="carNum" class="echarts"></div>
+            <select class="select">
+                <!-- <option value=""></option> -->
+            </select>
+        </div>
+        <div id="priceDistridution" class="echarts"></div>
+        <div id="yearDistridution" class="echarts"></div>
+        <div id="numDistridution" class="echarts"></div>
+    </div>
+</body>
+<script>
+    $(function(){
+        (function (doc, win) {
+            var docEl = doc.documentElement,
+                resizeEvt = 'orientationchange' in window ? 'orientationchange' : 'resize',
+                recalc = function () {
+                    var clientWidth = docEl.clientWidth;
+                    if (!clientWidth) return;
+                    if(clientWidth>=750){
+                        // $('.qrCode').css('font-size','100px')
+                        docEl.style.fontSize = '100px';
+                    }else{
+                        // $('.qrCode').css('font-size',100 * (clientWidth / 375) + 'px')
+                        docEl.style.fontSize = 100 * (clientWidth / 750) + 'px';
+                    }
+                };
+    
+            if (!doc.addEventListener) return;
+            win.addEventListener(resizeEvt, recalc, false);
+            doc.addEventListener('DOMContentLoaded', recalc, false);
+        })(document, window);
+        
+
+
+        $("input[name='time']").change((e)=>{
+            let day=''
+            if(e.target.defaultValue=='7'){
+                day=7
+            }else{
+                day=30
+            }
+            $.ajax({
+                url:'http://192.168.103.125:8070/platformsys/getLoginStatistics',
+                type:'get',
+                dataType:'json',
+                data:{day:day},
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success:(res)=>{
+                    login.x=res.body.xlist
+                    login.y=res.body.ylist
+                    loginNum()
+                }
+            })
+        })
+        $('.select').change((e)=>{
+            carTypes.forEach(item=>{
+                if(e.target.value==item.label){
+                    pinpai=item.label
+                    carNumer=item.num
+                    carNumber=item.number
+                }
+            })
+            carNum()
+        })
+        var login={
+            x:[],
+            y:[]
+        }
+        var dueNum={
+            x:[],
+            y:[]
+        }
+        var carPrice=[]
+        var cartotal=0
+        var pinpai='其他'
+        var carType=''
+        var carTypes=[]
+        
+        var carNumber=0
+        var carNumer=0
+        $.ajax({
+            url:'http://192.168.103.125:8070/platformsys/testLogin',
+            type:'post',
+            dataType:'json',
+            data:{uid:'lwx'},
+            
+            success:(res)=>{
+                    $.ajax({
+                        url:'http://192.168.103.125:8070/platformsys/carAnalysisAllTable',
+                        type:'get',
+                        dataType:'json',
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        crossDomain: true,
+                        success:(res)=>{
+                            console.log(res)
+                            if(res.code==1){
+                                login.x=res.body.carUserLogin.xlist
+                                login.y=res.body.carUserLogin.ylist
+                                dueNum.x=res.body.businessExpireDate.xlist
+                                dueNum.y=res.body.businessExpireDate.ylist
+                                cartotal=res.body.carModel.carNum
+                                carYears.x=res.body.carYears.xlist
+                                carYears.y=res.body.carYears.ylist
+                                
+                                carAreaCode.area=[]
+                                carAreaCode.legend=[]
+                                carAreaCode.data=[]
+                                for(let s in res.body.carAreaCode){
+                                    carAreaCode.area.push(s)
+                                    carAreaCode.data.push(res.body.carAreaCode[s])
+                                }
+                                for(let i in res.body.carPrice){
+                                    let json={
+                                        value:res.body.carPrice[i],
+                                        name:i
+                                    }
+                                    carPrice.push(json)
+                                }
+                                let qita=0
+                                let pinpai=''
+                                for(let i in res.body.carModel.carModelDate){
+                                    let json={
+                                        label:i,
+                                        num:(100*(Number(res.body.carModel.carModelDate[i])/Number(cartotal))).toFixed(2),
+                                        number:Number(res.body.carModel.carModelDate[i]),
+                                        value:i,
+                                    }
+                                    if(i=='其他'){
+                                        // qita=Number(res.body.carModel.carModelDate[i]).toFixed(2)
+                                        qita=i
+                                        pinpai=i
+                                        carNumer=(100*(Number(res.body.carModel.carModelDate[i])/Number(cartotal))).toFixed(2)
+                                        carNumber=Number(res.body.carModel.carModelDate[i])
+                                        }
+                                    carTypes.push(json)
+                                }
+                                for(let i = 0 ; i< carTypes.length ; i++){
+                                    $('.select').append(
+                                        `<option value="${carTypes[i].value}">${carTypes[i].label}</option>`
+                                    )
+                                }
+                                priceDistridution()
+                                loginNum()
+                                // businessDue()
+                                getExpireDateStatistics({day:30});
+                                carType=qita
+                                pinpai=pinpai
+                                carNum()
+                                yearDistridution()
+                                numDistridution()
+                            }
+                        }
+                    })
+                
+            },
+        })
+        
+        function getExpireDateStatistics(data){
+            $.ajax({
+                url:'http://192.168.103.125:8070/platformsys/getExpireDateStatistics',
+                type:'get',
+                data:data,
+                dataType:'json',
+                xhrFields: {
+                    withCredentials: true
+                },
+                crossDomain: true,
+                success:(res)=>{
+                    dueNum.x=res.body.xlist
+                    dueNum.y=res.body.ylist
+                    businessDue()
+                }
+            })
+        }
+
+        // loginNum();//登录人数
+        function loginNum(){
+            let myChart = echarts.init(document.getElementById('loginNum'));
+            myChart.setOption({
+                title: { text: '登录公众号人数'},
+                tooltip: {
+                    trigger: 'axis'
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    data: login.x
+                },
+                yAxis: {
+                },
+                series: [{
+                    name: '登录人数',
+                    type: 'line',
+                    data: login.y,
+                    itemStyle: {
+                        color: '#1890FF',
+                    },
+                }]
+            });
+        }
+
+        // businessDue()//商业险到期人数
+        function businessDue(){
+            let myChart = echarts.init(document.getElementById('businessDue'));
+            myChart.setOption({
+                title: { text: '商业保险即将到期人数'},
+                tooltip: {
+                    trigger: 'axis'
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    data: dueNum.x
+                },
+                yAxis: {
+                    
+                },
+                series: [{
+                    name: '即将到期人数',
+                    type: 'line',
+                    data: dueNum.y,
+                    itemStyle: {
+                        color: '#1890FF',
+                    },
+                }]
+            });
+        }
+        
+        // carNum();//车辆数
+        function carNum(){
+            let myChart = echarts.init(document.getElementById('carNum'));
+            myChart.setOption({
+                title: { text: '车辆数查询'},
+                tooltip: {
+                    formatter: '{a} <br/>{b} : {c}% <br/> 车辆数量 : '+carNumber
+                },
+                series: [
+                    {
+                        name: '车辆总数 : '+cartotal,
+                        type: 'gauge',
+                        radius: "80%",
+                        // center: ["30%", "50%"],
+                        detail: {formatter: "{value}%"},
+                        data: [{value: carNumer, name: pinpai+'品牌占比'}]
+                    },
+                ]
+            });
+        }
+
+        // priceDistridution();//车价分布
+        function priceDistridution(){
+            let myChart = echarts.init(document.getElementById('priceDistridution'))
+            let arr=[]
+            carPrice.forEach(item=>{
+                arr.push(item.name)
+            })
+            myChart.setOption({
+                title: {
+                    text: '车辆价格分布图',
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b} : {c} ({d}%)'
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left',
+                    top:'center',
+                    data: arr
+                },
+                series: [
+                    {
+                        name: '车辆价格分布',
+                        type: 'pie',
+                        radius: '55%',
+                        center: ['50%', '50%'],
+                        data: carPrice,
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        },
+                        itemStyle: {
+                            color: '#3398DB',
+                            shadowBlur: 200,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)',
+                            normal:{
+                                color:function(params) {
+                                //自定义颜色
+                                var colorList = [          
+                                        '#4ECB73', '#3AA1FF', '#3E4967', '#975FE5', '#FBD437'
+                                    ];
+                                    return colorList[params.dataIndex]
+                                    }
+                            }
+                        },
+                    }
+                ]
+            })
+        }
+        })
+        var carYears={
+            x:[],
+            y:[]
+        }
+        // yearDistridution();//车辆年限分布
+        function yearDistridution(){
+            let myChart = echarts.init(document.getElementById('yearDistridution'))
+            console.log(carYears)
+            myChart.setOption({
+                title: { text: '车辆年限分布图'},
+                color: ['#3398DB'],
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+                        type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: [
+                    {
+                        type: 'category',
+                        data: carYears.x,
+                        axisTick: {
+                            alignWithLabel: true
+                        }
+                    }
+                ],
+                yAxis: [
+                    {
+                        type: 'value'
+                    }
+                ],
+                series: [
+                    {
+                        name: '车辆年限',
+                        type: 'bar',
+                        barWidth: '60%',
+                        data: carYears.y
+                    }
+                ]
+            });
+        }
+
+        var carAreaCode={
+            area:[],
+            legend:[],
+            data:[]
+        }
+        // numDistridution();//车辆分布
+        function numDistridution(){
+            let myChart = echarts.init(document.getElementById('numDistridution'))
+            let arr30=[]
+            let arr20_30=[]
+            let arr15_20=[]
+            let arr10_15=[]
+            let arr10=[]
+            carAreaCode.data.forEach(item=>{
+                for(let i in item ){
+                    carAreaCode.legend.push(i)
+                    if(i=='30万以上'){
+                        arr30.push(item[i])
+                    }else if(i=='20~30万'){
+                        arr20_30.push(item[i])
+                    }else if(i=='15~20万'){
+                        arr15_20.push(item[i])
+                    }else if(i=='10~15万'){
+                        arr10_15.push(item[i])
+                    }else if(i=='10万以下'){
+                        arr10.push(item[i])
+                    }
+                }
+            })
+            myChart.setOption({
+                title: { text: '车辆分布图'},
+                tooltip: {
+                trigger: 'axis',
+                axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+                    type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+                }
+            },
+            legend: {
+                top:'top',
+                left:'center',
+                data: carAreaCode.legend
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'value'
+            },
+            yAxis: {
+                type: 'category',
+                data: carAreaCode.area
+            },
+            series: [
+                {
+                    name: '30万以上',
+                    type: 'bar',
+                    stack: '总量',
+                    color:'#975FE5',
+                    data: arr30
+                },
+                {
+                    name: '20~30万',
+                    type: 'bar',
+                    stack: '总量',
+                    color:'#3E4967',
+                    data: arr20_30
+                },
+                {
+                    name: '15~20万',
+                    type: 'bar',
+                    color:'#FBD437',
+                    stack: '总量',
+                    data: arr15_20
+                },
+                {
+                    name: '10~15万',
+                    type: 'bar',
+                    stack: '总量',
+                    color:'#4ECB73',
+                    data: arr10_15
+                },
+                {
+                    name: '10万以下',
+                    type: 'bar',
+                    stack: '总量',
+                    color:'#3AA1FF',
+                    data: arr10
+                }
+            ]
+            });
+        }
+</script>
+</html>

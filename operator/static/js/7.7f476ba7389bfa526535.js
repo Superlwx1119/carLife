@@ -1,0 +1,2 @@
+webpackJsonp([7],{"/GGA":function(e,n,t){"use strict";Object.defineProperty(n,"__esModule",{value:!0});var r={render:function(){var e=this.$createElement;return(this._self._c||e)("router-view")},staticRenderFns:[]};var a=t("VU/8")({name:"channelList"},r,!1,function(e){t("2+Va")},null,null);n.default=a.exports},"2+Va":function(e,n){}});
+//# sourceMappingURL=7.7f476ba7389bfa526535.js.map

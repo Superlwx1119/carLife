@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>登录</title>
+</head>
+<body>
+    <div>
+        登录中,请稍后....
+    </div>
+</body>
+<script src="./jq.js"></script>
+<script>
+    window.onload=function(){
+        function refresh() {
+            var req = location.hash.slice(1) || '/';
+            console.log(req); //此处可替换为URL操作方法
+        }
+        function bind_uri_refresh() {
+            window.addEventListener('load', refresh.bind(this), false);
+            window.addEventListener('hashchange', refresh.bind(this), false);
+        }
+        function getQueryVariable(variable){//获取url参数
+            var str = window.location.search.indexOf('?');
+            var query=window.location.search.substring(str+1,window.location.search.length)
+            var vars = query.split("&");
+            for (var i=0;i<vars.length;i++) {
+                    var pair = vars[i].split("=");
+                    if(pair[0] == variable){return pair[1];}
+            }
+            return(false);
+        }
+        
+        bind_uri_refresh();
+        $.ajax({
+            url:'https://boot.csgxcf.com/operator/toLogin?uid='+getQueryVariable('u'),
+            method:'get',
+            success:(res)=>{
+                if(res.code==1){
+                    window.sessionStorage.setItem('uid',res.body.uid)
+                    window.sessionStorage.setItem('user',JSON.stringify(res.body))
+                    window.location.href='../index.html'
+                }else{
+                    alert(res.msg)
+                }
+                
+            }
+        })
+    }
+</script>
+</html>

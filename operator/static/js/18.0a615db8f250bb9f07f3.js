@@ -1,0 +1,2 @@
+webpackJsonp([18],{"Wkf/":function(e,t){},lI2t:function(e,t,n){"use strict";Object.defineProperty(t,"__esModule",{value:!0});var a={render:function(){var e=this.$createElement;return(this._self._c||e)("div",{staticClass:"couponBg"})},staticRenderFns:[]};var c=n("VU/8")({name:"couponBg"},a,!1,function(e){n("Wkf/")},"data-v-4f7ca412",null);t.default=c.exports}});
+//# sourceMappingURL=18.0a615db8f250bb9f07f3.js.map

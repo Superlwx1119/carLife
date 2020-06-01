@@ -1,0 +1,2 @@
+webpackJsonp([10],{"9RZV":function(s,e){},Ajsl:function(s,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var t={render:function(){var s=this.$createElement;return(this._self._c||s)("div",{staticClass:"permissions"},[this._v("\n      ssss\n")])},staticRenderFns:[]};var i=n("VU/8")({name:"permissions"},t,!1,function(s){n("9RZV")},"data-v-824a4040",null);e.default=i.exports}});
+//# sourceMappingURL=10.a87d6b8d1eb527e83051.js.map
